@@ -182,8 +182,14 @@ export default function InvoiceTable() {
       }
 
       const res = await fetch(API_URL, { method: "GET" });
+      
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
+      if(!res.body) throw new Error("No response body");
+      debugger
       const payload = await res.json();
+      if (!payload || (Array.isArray(payload) && payload.length === 0)) {
+        throw new Error("Empty response body");
+      }
 
       let items: any[] = [];
       if (Array.isArray(payload)) items = payload;
