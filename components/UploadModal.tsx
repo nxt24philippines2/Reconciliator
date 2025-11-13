@@ -63,7 +63,7 @@ export default function UploadModal({ open, onClose }: UploadModalProps) {
             const payload = uploaded.map((u: any) => ({
               invoice: {
               invoiceUrl: u.Location,
-              invoiceDescription: u.key,
+              invoiceDescription: u.Key,
               },
             }));
 
@@ -122,7 +122,7 @@ export default function UploadModal({ open, onClose }: UploadModalProps) {
             <input
               type="file"
               onChange={handleFileChange}
-              accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx,.csv"
+              accept=".pdf,.jpg,.jpeg,.png,.gif,.doc,.docx,.xls,.xlsx,.csv, .html"
               style={{ display: "none" }}
               id="file-input"
               multiple

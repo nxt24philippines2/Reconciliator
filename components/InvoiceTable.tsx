@@ -67,7 +67,7 @@ Reconciled on 2025-11-06 by user: auditor1`,
     vendor: "Tech Solutions",
     amount: 2500.0,
     date: new Date("2025-11-02") as any,
-    status: "mismatch",
+    status: "with discrepancy",
     discrepancyReasons: [
       {
         discrepancyField: "amount",
@@ -87,7 +87,7 @@ Last updated: 2025-11-07 09:12 UTC`,
     vendor: "Global Supplies",
     amount: 750.5,
     date: new Date("2025-11-03") as any,
-    status: "pending",
+    status: "with discrepancy",
     discrepancyReasons: [
       {
         discrepancyField: "date",
@@ -111,7 +111,7 @@ Next action: auto-remind in 3 days`,
     vendor: "Office Depot",
     amount: 320.0,
     date: new Date("2025-11-04") as any,
-    status: "matched",
+    status: "reconciled",
     discrepancyReasons: [],
     logs: `Reconciliation completed
 PO matched, tax calculated and verified
@@ -124,7 +124,7 @@ Reference: batch-2025-11-05-04`,
     vendor: "Energy Inc",
     amount: 3200.75,
     date: new Date("2025-11-05") as any,
-    status: "exception",
+    status: "with discrepancy",
     discrepancyReasons: [
       {
         discrepancyField: "taxAmount",
@@ -142,19 +142,17 @@ Escalation created: FIN-879`,
   },
 ];
 
-const API_URL = "https://nxt24philippines2.app.n8n.cloud/webhook-test/invoices";
+const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
 
 // Status color mapper
 const getStatusColor = (status: string) => {
   switch (status) {
     case "matched":
       return "success";
-    case "mismatch":
-      return "warning";
-    case "pending":
-      return "info";
-    case "exception":
+    case "with discrepancy":
       return "error";
+    case "reconciled":
+      return "info";
     default:
       return "default";
   }
@@ -323,7 +321,7 @@ export default function InvoiceTable() {
   return (
     <>
       <Stack spacing={2} sx={{ mt: 2 }}>
-        {error && (
+        {false && (
           <Alert
             severity="error"
             action={

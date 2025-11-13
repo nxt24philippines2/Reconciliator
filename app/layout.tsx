@@ -15,7 +15,7 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "AMBER",
+  title: "AMBR",
   description: "Invoice reconciliator app",
 };
 
@@ -31,7 +31,7 @@ export default function RootLayout({
       >
         <div className="min-h-screen flex">
           {/* Left sidebar */}
-          <Sidebar />
+          {/* <Sidebar /> */}
 
           {/* Main content area */}
           <main className="flex-1 p-8">
