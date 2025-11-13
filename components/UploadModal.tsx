@@ -52,7 +52,6 @@ export default function UploadModal({ open, onClose }: UploadModalProps) {
         body: form,
       })
         .then(async (res) => {
-          debugger
             if (!res.ok) {
               const text = await res.text();
               throw new Error(`Upload failed: ${res.status} ${text}`);
