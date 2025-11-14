@@ -1,3 +1,4 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React, { useState, useEffect, useCallback } from "react";
@@ -142,7 +143,9 @@ Escalation created: FIN-879`,
   },
 ];
 
-const API_URL = process.env.NEXT_PUBLIC_API_URL ?? '';
+const GET_INVOICES_API_URL = process.env.NEXT_PUBLIC_API_URL
+  ? `${process.env.NEXT_PUBLIC_API_URL}/invoices`
+  : "";
 
 // Status color mapper
 const getStatusColor = (status: string) => {
@@ -159,7 +162,9 @@ const getStatusColor = (status: string) => {
 };
 
 export default function InvoiceTable() {
-  const [openDiscrepancies, setOpenDiscrepancies] = useState<string | null>(null);
+  const [openDiscrepancies, setOpenDiscrepancies] = useState<string | null>(
+    null
+  );
   const [openLogs, setOpenLogs] = useState<string | null>(null);
   const [selectedInvoice, setSelectedInvoice] = useState<Invoice | null>(null);
 
@@ -172,7 +177,6 @@ export default function InvoiceTable() {
     setLoading(true);
     setError(null);
     try {
-
       const controller = signal ? undefined : new AbortController();
       const usedSignal = signal ?? controller?.signal;
 
@@ -181,11 +185,11 @@ export default function InvoiceTable() {
         timeoutId = setTimeout(() => controller.abort(), 10000);
       }
 
-      const res = await fetch(API_URL, { method: "GET" });
-      
+      const res = await fetch(GET_INVOICES_API_URL, { method: "GET" });
+
       if (!res.ok) throw new Error(`HTTP ${res.status}`);
-      if(!res.body) throw new Error("No response body");
-      debugger
+      if (!res.body) throw new Error("No response body");
+      debugger;
       const payload = await res.json();
       if (!payload || (Array.isArray(payload) && payload.length === 0)) {
         throw new Error("Empty response body");
@@ -265,7 +269,9 @@ export default function InvoiceTable() {
             cursor: "pointer",
             fontWeight: 500,
           }}
-          onMouseEnter={(e) => (e.currentTarget.style.textDecoration = "underline")}
+          onMouseEnter={(e) =>
+            (e.currentTarget.style.textDecoration = "underline")
+          }
           onMouseLeave={(e) => (e.currentTarget.style.textDecoration = "none")}
         >
           {params.row.invoiceNumber}
@@ -300,7 +306,8 @@ export default function InvoiceTable() {
       width: 130,
       sortable: false,
       renderCell: (params: GridRenderCellParams<Invoice>) =>
-        params.row.discrepancyReasons && params.row.discrepancyReasons.length > 0 ? (
+        params.row.discrepancyReasons &&
+        params.row.discrepancyReasons.length > 0 ? (
           <IconButton
             size="small"
             onClick={() => handleOpenDiscrepancies(params.row)}

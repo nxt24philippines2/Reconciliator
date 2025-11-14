@@ -1,9 +1,23 @@
+/* eslint-disable @typescript-eslint/no-explicit-any */
 "use client";
 
 import React from "react";
 import { useParams, useRouter } from "next/navigation";
-import { Button, Box, Typography, Paper, Table, TableBody, TableCell, TableContainer, TableHead, TableRow, Chip } from "@mui/material";
+import {
+  Button,
+  Box,
+  Typography,
+  Paper,
+  Table,
+  TableBody,
+  TableCell,
+  TableContainer,
+  TableHead,
+  TableRow,
+  Chip,
+} from "@mui/material";
 import ArrowBackIcon from "@mui/icons-material/ArrowBack";
+import { InvoiceData } from "./models";
 
 // Sample invoice data (in a real app, this would come from a database or API)
 const invoiceDatabase: Record<string, any> = {
@@ -111,7 +125,66 @@ export default function InvoiceDetailPage() {
   const params = useParams();
   const router = useRouter();
   const invoiceNumber = params.invoiceNumber as string;
-  const invoice = invoiceDatabase[invoiceNumber];
+  // const invoice = invoiceDatabase[invoiceNumber];
+  const [invoiceData, setInvoiceData] = React.useState<any>(null);
+  const [loading, setLoading] = React.useState(true);
+  const [error, setError] = React.useState<string | null>(null);
+
+  React.useEffect(() => {
+    const fetchInvoice = async () => {
+      try {
+        setLoading(true);
+        const response = await fetch(
+          `https://nxt24philippines2.app.n8n.cloud/webhook-test/invoice?q=${invoiceNumber}`
+        );
+
+        if (!response.ok) {
+          throw new Error(`HTTP error! status: ${response.status}`);
+        }
+
+        const data = await response.json();
+        setInvoiceData(new InvoiceData(data[0]));
+      } catch (err) {
+        setError(
+          err instanceof Error ? err.message : "Failed to fetch invoice"
+        );
+      } finally {
+        setLoading(false);
+      }
+    };
+
+    if (invoiceNumber) {
+      fetchInvoice();
+    }
+  }, [invoiceNumber]);
+
+  // Use fetched data instead of static database
+  const invoice = invoiceData || invoiceDatabase[invoiceNumber];
+
+  if (loading) {
+    return (
+      <Box sx={{ maxWidth: "900px", mx: "auto", py: 4, textAlign: "center" }}>
+        <Typography>Loading invoice...</Typography>
+      </Box>
+    );
+  }
+
+  if (error) {
+    return (
+      <Box sx={{ maxWidth: "900px", mx: "auto", py: 4 }}>
+        <Button
+          startIcon={<ArrowBackIcon />}
+          onClick={() => router.back()}
+          sx={{ mb: 2 }}
+        >
+          Back
+        </Button>
+        <Typography variant="h5" color="error">
+          Error loading invoice: {error}
+        </Typography>
+      </Box>
+    );
+  }
 
   if (!invoice) {
     return (
@@ -141,7 +214,14 @@ export default function InvoiceDetailPage() {
       </Button>
 
       <Paper sx={{ p: 4 }}>
-        <Box sx={{ display: "flex", justifyContent: "space-between", alignItems: "center", mb: 4 }}>
+        <Box
+          sx={{
+            display: "flex",
+            justifyContent: "space-between",
+            alignItems: "center",
+            mb: 4,
+          }}
+        >
           <Typography variant="h4" component="h1">
             Invoice Details
           </Typography>
@@ -153,7 +233,14 @@ export default function InvoiceDetailPage() {
           />
         </Box>
 
-        <Box sx={{ display: "grid", gridTemplateColumns: "1fr 1fr", gap: 3, mb: 4 }}>
+        <Box
+          sx={{
+            display: "grid",
+            gridTemplateColumns: "1fr 1fr",
+            gap: 3,
+            mb: 4,
+          }}
+        >
           <Box>
             <Typography variant="subtitle2" color="textSecondary">
               Invoice Number
@@ -182,7 +269,7 @@ export default function InvoiceDetailPage() {
               Amount
             </Typography>
             <Typography variant="body1" sx={{ fontWeight: 500, mb: 2 }}>
-              ${invoice.amount.toFixed(2)}
+              ${invoice.amount?.toFixed(2)}
             </Typography>
 
             <Typography variant="subtitle2" color="textSecondary">
@@ -204,39 +291,43 @@ export default function InvoiceDetailPage() {
         <Typography variant="subtitle2" color="textSecondary" sx={{ mb: 1 }}>
           Description
         </Typography>
-        <Typography variant="body2" sx={{ mb: 4, p: 2, bgcolor: "#f5f5f5", borderRadius: 1 }}>
+        <Typography
+          variant="body2"
+          sx={{ mb: 4, p: 2, bgcolor: "#f5f5f5", borderRadius: 1 }}
+        >
           {invoice.description}
         </Typography>
 
-        {invoice.discrepancyReasons && invoice.discrepancyReasons.length > 0 && (
-          <>
-            <Typography variant="h6" sx={{ mb: 2, mt: 4 }}>
-              Discrepancies
-            </Typography>
-            <TableContainer component={Paper} sx={{ mb: 4 }}>
-              <Table>
-                <TableHead>
-                  <TableRow sx={{ bgcolor: "#f5f5f5" }}>
-                    <TableCell>Field</TableCell>
-                    <TableCell>Type</TableCell>
-                    <TableCell>Reason</TableCell>
-                  </TableRow>
-                </TableHead>
-                <TableBody>
-                  {invoice.discrepancyReasons.map((d: any, idx: number) => (
-                    <TableRow key={idx}>
-                      <TableCell>{d.discrepancyField}</TableCell>
-                      <TableCell>
-                        <Chip label={d.discrepancyType} size="small" />
-                      </TableCell>
-                      <TableCell>{d.discrepancyReason}</TableCell>
+        {invoice.discrepancyReasons &&
+          invoice.discrepancyReasons.length > 0 && (
+            <>
+              <Typography variant="h6" sx={{ mb: 2, mt: 4 }}>
+                Discrepancies
+              </Typography>
+              <TableContainer component={Paper} sx={{ mb: 4 }}>
+                <Table>
+                  <TableHead>
+                    <TableRow sx={{ bgcolor: "#f5f5f5" }}>
+                      <TableCell>Field</TableCell>
+                      <TableCell>Type</TableCell>
+                      <TableCell>Reason</TableCell>
                     </TableRow>
-                  ))}
-                </TableBody>
-              </Table>
-            </TableContainer>
-          </>
-        )}
+                  </TableHead>
+                  <TableBody>
+                    {invoice.discrepancyReasons.map((d: any, idx: number) => (
+                      <TableRow key={idx}>
+                        <TableCell>{d.discrepancyField}</TableCell>
+                        <TableCell>
+                          <Chip label={d.discrepancyType} size="small" />
+                        </TableCell>
+                        <TableCell>{d.discrepancyReason}</TableCell>
+                      </TableRow>
+                    ))}
+                  </TableBody>
+                </Table>
+              </TableContainer>
+            </>
+          )}
 
         <Typography variant="h6" sx={{ mb: 2 }}>
           Logs
